@@ -1,11 +1,11 @@
-"""UI component renderers for Ventura.
+"""UI component renderers for Ventura (Phase 1 Redesign).
 
 Renders:
-- Header and headline ("BREATHE BETTER. LIVE CLEANER.")
+- Refined SaaS header and 2-line dynamic headline ("BREATHE BETTER. LIVE CLEANER.")
 - Air quality status card (AQI number, level label, main pollutant)
-- Quick start 4 questions with large tappable option cards (filled earthy color + checkmark when selected)
-- Personal plan with 4 cards in required order, each with impact level and 'Not for me' dismiss button
-- Small footer with "Updated [time]"
+- Quick start 4 assessment questions wrapped in a unified card container
+- Personal plan with 4 cards in strict PRD order, each with impact level and 'Not for me' dismiss button
+- Small footer with "Updated [time]" and tip restoration
 """
 
 import streamlit as st
@@ -15,14 +15,18 @@ from rules.advice_rules import AdviceItem, AREA_DISPLAY_ORDER, get_personalized_
 
 
 def render_header() -> None:
-    """Render the Ventura brand header and bold all-caps headline."""
+    """Render the Ventura brand header and dynamic two-line headline."""
     st.markdown(
         """
         <div class="ventura-header">
-            <span style="font-size: 22px;">🌿</span>
+            <span style="font-size: 20px;">🌿</span>
             <span class="ventura-logo-text">Ventura</span>
+            <span class="live-dot-badge">• Delhi Live Air</span>
         </div>
-        <h1 class="ventura-headline">BREATHE BETTER. LIVE CLEANER.</h1>
+        <div class="hero-headline-group">
+            <h1 class="hero-headline-main">BREATHE BETTER.</h1>
+            <h2 class="hero-headline-sub">LIVE CLEANER.</h2>
+        </div>
         <p class="ventura-subheadline">
             Tailored daily actions and sustainable choices based on Delhi's live winter air.
         </p>
@@ -32,15 +36,15 @@ def render_header() -> None:
 
 
 def render_air_status_card(reading: AirReading) -> None:
-    """Render the large air quality status card.
+    """Render the minimal, elegant air quality status card.
 
-    Shows AQI number, color badge with text label, and main pollutant.
+    Shows AQI number, color badge with text label, and main pollutant breakdown.
     """
     card_html = f"""
     <div class="air-status-card" role="region" aria-label="Delhi Air Quality Status">
         <div class="air-status-header">
             <span class="air-location">📍 Delhi (National Capital Territory)</span>
-            <span style="font-size: 13px; color: #5A4E46; font-weight: 500;">{reading.source_label}</span>
+            <span class="air-source-label">{reading.source_label}</span>
         </div>
         <div class="air-reading-row">
             <div class="aqi-number" style="color: {reading.status_color};" aria-label="AQI {reading.aqi}">
@@ -50,7 +54,7 @@ def render_air_status_card(reading: AirReading) -> None:
                 <span class="aqi-badge" style="background-color: {reading.status_color};">
                     {reading.category}
                 </span>
-                <div style="font-size: 13px; color: #5A4E46; margin-top: 4px; font-weight: 600;">
+                <div style="font-size: 13px; color: #5E7A66; margin-top: 5px; font-weight: 600;">
                     Air Quality Index
                 </div>
             </div>
@@ -58,7 +62,7 @@ def render_air_status_card(reading: AirReading) -> None:
         <div class="pollutant-metrics-grid">
             <div class="pollutant-item">
                 <div class="pollutant-label">Main Pollutant</div>
-                <div class="pollutant-value" style="color: #9C3E20;">{reading.dominant_pollutant}</div>
+                <div class="pollutant-value" style="color: #B85334;">{reading.dominant_pollutant}</div>
             </div>
             <div class="pollutant-item">
                 <div class="pollutant-label">Fine Dust (PM2.5)</div>
@@ -75,20 +79,13 @@ def render_air_status_card(reading: AirReading) -> None:
 
 
 def render_quick_start() -> Dict[str, str]:
-    """Render the 4 quick start questions with large tappable option cards.
+    """Render the 4 quick start questions wrapped inside a unified card container.
 
-    A selected option gets a filled earthy color and a check mark (✓),
+    A selected option gets a filled forest green color and a check mark (✓),
     making the choice obvious without relying on color alone.
     Kept strictly in session memory.
     """
-    st.markdown(
-        """
-        <div class="section-card">
-            <div class="section-title">⚡ QUICK START</div>
-            <div class="section-subtitle">Tap an option in each category to tailor your daily plan:</div>
-        """,
-        unsafe_allow_html=True,
-    )
+    answers: Dict[str, str] = {}
 
     # Question definitions: (key, title, options, default_index)
     questions = [
@@ -137,38 +134,46 @@ def render_quick_start() -> Dict[str, str]:
         ),
     ]
 
-    answers: Dict[str, str] = {}
+    # Native container wrapping fixes the previous unclosed DOM tag nesting issue
+    with st.container(border=True):
+        st.markdown(
+            """
+            <div class="section-title">⚡ QUICK START</div>
+            <div class="section-subtitle">Tap an option in each category to tailor your daily plan:</div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    for q_key, q_title, options, default_idx in questions:
-        # Initialize default in session_state if not set
-        if q_key not in st.session_state:
-            st.session_state[q_key] = options[default_idx]
+        for q_key, q_title, options, default_idx in questions:
+            if q_key not in st.session_state:
+                st.session_state[q_key] = options[default_idx]
 
-        st.markdown(f"<div style='font-weight: 700; font-size: 16px; margin: 12px 0 8px 0; color: #231F20;'>{q_title}</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='font-weight: 700; font-size: 15px; margin: 12px 0 6px 0; color: #231F20;'>{q_title}</div>",
+                unsafe_allow_html=True,
+            )
 
-        current_val = st.session_state[q_key]
+            current_val = st.session_state[q_key]
 
-        # Render options as a 2-column grid of large tappable cards (44px min-height)
-        cols = st.columns(2)
-        for i, opt in enumerate(options):
-            col = cols[i % 2]
-            is_selected = (opt == current_val)
-            button_label = f"✓ {opt}" if is_selected else opt
-            button_type = "primary" if is_selected else "secondary"
+            # 2-column grid of large tappable cards (44px min-height)
+            cols = st.columns(2)
+            for i, opt in enumerate(options):
+                col = cols[i % 2]
+                is_selected = (opt == current_val)
+                button_label = f"✓ {opt}" if is_selected else opt
+                button_type = "primary" if is_selected else "secondary"
 
-            with col:
-                if st.button(
-                    button_label,
-                    key=f"btn_{q_key}_{i}",
-                    type=button_type,
-                    use_container_width=True,
-                ):
-                    st.session_state[q_key] = opt
-                    st.rerun()
+                with col:
+                    if st.button(
+                        button_label,
+                        key=f"btn_{q_key}_{i}",
+                        type=button_type,
+                        use_container_width=True,
+                    ):
+                        st.session_state[q_key] = opt
+                        st.rerun()
 
-        answers[q_key.replace("quick_", "")] = st.session_state[q_key]
-
-    st.markdown("</div>", unsafe_allow_html=True)
+            answers[q_key.replace("quick_", "")] = st.session_state[q_key]
 
     return answers
 
@@ -193,7 +198,14 @@ def render_personal_plan(
         dismissed_ids=dismissed_ids,
     )
 
-    st.markdown("<h2 class='ventura-headline'>YOUR PERSONAL PLAN</h2>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="plan-section-divider">
+            <h2 class="plan-heading-title">YOUR PERSONAL PLAN</h2>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     for area_key, area_title, area_desc in AREA_DISPLAY_ORDER:
         tips: List[AdviceItem] = plan.get(area_key, [])
@@ -216,7 +228,7 @@ def render_personal_plan(
         if not tips:
             st.markdown(
                 """
-                <div style="font-size: 15px; color: #5A4E46; padding: 8px 0;">
+                <div style="font-size: 14px; color: #5E7A66; padding: 6px 0;">
                     All suggestions in this area have been dismissed.
                 </div>
                 """,
@@ -237,7 +249,7 @@ def render_personal_plan(
                 """
                 st.markdown(tip_box_html, unsafe_allow_html=True)
 
-                # Solid, rounded 'Not for me' button with 44px minimum tap height & high contrast
+                # Solid rounded 'Not for me' button with 44px min tap height
                 st.markdown("<div class='dismiss-btn-container'>", unsafe_allow_html=True)
                 if st.button(
                     "✕ Not for me",

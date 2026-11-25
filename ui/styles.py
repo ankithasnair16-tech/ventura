@@ -1,18 +1,19 @@
-"""Earthy color palette and styling for Ventura according to Design PRD.
+"""Earthy, minimal, and premium SaaS styling for Ventura according to Phase 1 Redesign.
 
-Colors:
-- Background: Warm sand / off-white (#FAF7F2)
-- Main text: Deep charcoal brown (#231F20)
-- Primary accent: Forest olive green (#3D5A40)
-- Secondary accent: Terracotta clay (#C15C3D)
-- Cards: Soft cream (#FFFFFF) with subtle warm shadow
-- Typography: Inter sans-serif everywhere, body >= 16px, headlines bold all-caps
-- Buttons: Solid, rounded, 44px min-height, high-contrast labels in normal & hover
-- Layout: 600px max-width on laptop, 16px padding around screen, 16px card spacing
+Design Tokens:
+- Canvas background: Warm ivory (#FBF9F5)
+- Cards: Clean white (#FFFFFF) with subtle border (#EAE5DC) and soft shadow
+- Primary accent: Deep forest green (#2E4D36 / #3D5A40)
+- Secondary accent: Muted sage (#5E7A66 / #6C8573)
+- Restrained accent: Terracotta clay (#B85334)
+- Charcoal typography: Primary (#231F20), Secondary (#4A3E36)
+- Typography: Clean Inter sans-serif throughout, refined hierarchy
+- Buttons: Solid, rounded, 44px minimum tap target, high-contrast normal & hover
+- Layout: 600px max-width container, 16px screen padding, 16px card spacing
 """
 
 def get_custom_css() -> str:
-    """Return CSS styling adhering to UI specifications and WCAG contrast."""
+    """Return CSS styling adhering to Phase 1 design specifications and WCAG contrast."""
     return """
     <style>
     /* 1. Typography: Clean sans-serif (Inter) everywhere */
@@ -20,17 +21,17 @@ def get_custom_css() -> str:
 
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-        background-color: #FAF7F2 !important;
+        background-color: #FBF9F5 !important;
         color: #231F20 !important;
         font-size: 16px !important;
         line-height: 1.5 !important;
     }
 
-    /* 2. Layout: Max 600px on laptop, single column on phone, 16px screen padding */
+    /* 2. Layout: 600px max-width on desktop, single column on phone, 16px screen padding */
     .block-container {
         max-width: 600px !important;
-        padding-top: 16px !important;
-        padding-bottom: 24px !important;
+        padding-top: 20px !important;
+        padding-bottom: 32px !important;
         padding-left: 16px !important;
         padding-right: 16px !important;
         margin-left: auto !important;
@@ -44,7 +45,7 @@ def get_custom_css() -> str:
         }
     }
 
-    /* Hide standard Streamlit chrome */
+    /* Hide standard Streamlit header & footer */
     header[data-testid="stHeader"] {
         background-color: transparent !important;
     }
@@ -58,60 +59,83 @@ def get_custom_css() -> str:
         outline-offset: 2px !important;
     }
 
-    /* Header styling */
+    /* Brand Header */
     .ventura-header {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 4px 0 2px 0;
+        gap: 8px;
+        padding: 4px 0 6px 0;
     }
 
     .ventura-logo-text {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 800;
-        letter-spacing: 0.8px;
+        letter-spacing: 1.2px;
         color: #3D5A40;
         text-transform: uppercase;
         margin: 0;
     }
 
-    /* Headlines: bold, all caps, one size larger than body (20px vs 16px) */
-    .ventura-headline {
-        font-size: 20px !important;
+    .live-dot-badge {
+        font-size: 12px;
+        font-weight: 600;
+        color: #5E7A66;
+        letter-spacing: 0.4px;
+        margin-left: 4px;
+    }
+
+    /* Hero headline group with dynamic mixed scale */
+    .hero-headline-group {
+        margin: 6px 0 10px 0;
+    }
+
+    .hero-headline-main {
+        font-size: 26px !important;
         font-weight: 800 !important;
-        letter-spacing: 0.6px !important;
+        letter-spacing: 0.5px !important;
         color: #231F20 !important;
         text-transform: uppercase !important;
-        margin: 6px 0 8px 0 !important;
+        margin: 0 0 2px 0 !important;
+        line-height: 1.25 !important;
+    }
+
+    .hero-headline-sub {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        color: #3D5A40 !important;
+        text-transform: uppercase !important;
+        margin: 0 !important;
         line-height: 1.3 !important;
     }
 
     .ventura-subheadline {
-        font-size: 16px !important;
+        font-size: 15px !important;
         color: #4A3E36 !important;
-        margin-bottom: 16px !important;
-        line-height: 1.4 !important;
-        font-weight: 500 !important;
+        margin-bottom: 18px !important;
+        line-height: 1.45 !important;
+        font-weight: 450 !important;
     }
 
-    /* 16px space between cards */
+    /* Unified Cards: Subtle borders, clean ivory/white depth, 16px space between cards */
     .air-status-card,
     .section-card,
-    .section-card-highlighted {
-        background: #FFFFFF;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 16px rgba(45, 36, 30, 0.06);
-        border: 1px solid #EAE3D9;
+    .section-card-highlighted,
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #FFFFFF !important;
+        border-radius: 16px !important;
+        border: 1px solid #EAE5DC !important;
+        box-shadow: 0 4px 20px rgba(35, 31, 32, 0.04) !important;
         margin-bottom: 16px !important;
+        padding: 22px 20px !important;
     }
 
     .section-card-highlighted {
-        border: 2.5px solid #3D5A40 !important;
-        box-shadow: 0 6px 20px rgba(61, 90, 64, 0.12) !important;
+        border: 2px solid #3D5A40 !important;
+        box-shadow: 0 6px 24px rgba(61, 90, 64, 0.08) !important;
     }
 
-    /* Air status layout */
+    /* Air Status Card Layout */
     .air-status-header {
         display: flex;
         justify-content: space-between;
@@ -122,11 +146,17 @@ def get_custom_css() -> str:
     }
 
     .air-location {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
-        letter-spacing: 0.6px;
+        letter-spacing: 0.8px;
         color: #4A3E36;
         text-transform: uppercase;
+    }
+
+    .air-source-label {
+        font-size: 13px;
+        color: #5E7A66;
+        font-weight: 600;
     }
 
     .air-reading-row {
@@ -134,24 +164,24 @@ def get_custom_css() -> str:
         align-items: baseline;
         gap: 16px;
         flex-wrap: wrap;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
 
     .aqi-number {
-        font-size: 52px;
+        font-size: 54px;
         font-weight: 800;
         line-height: 1;
-        letter-spacing: -1px;
+        letter-spacing: -1.5px;
     }
 
     .aqi-badge {
         display: inline-block;
         padding: 6px 14px;
         border-radius: 999px;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
         color: #FFFFFF;
     }
 
@@ -160,22 +190,23 @@ def get_custom_css() -> str:
         grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
         gap: 10px;
         margin-top: 14px;
-        padding-top: 12px;
-        border-top: 1px solid #EAE3D9;
+        padding-top: 14px;
+        border-top: 1px solid #F0ECE4;
     }
 
     .pollutant-item {
-        background-color: #FAF7F2;
-        padding: 10px 12px;
-        border-radius: 10px;
+        background-color: #FBF9F5;
+        border: 1px solid #F0ECE4;
+        padding: 10px 14px;
+        border-radius: 12px;
     }
 
     .pollutant-label {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        color: #5A4E46;
-        margin-bottom: 2px;
+        color: #5E7A66;
+        margin-bottom: 3px;
         letter-spacing: 0.5px;
     }
 
@@ -198,7 +229,7 @@ def get_custom_css() -> str:
     .section-title {
         font-size: 18px !important;
         font-weight: 800 !important;
-        letter-spacing: 0.6px !important;
+        letter-spacing: 0.8px !important;
         color: #231F20 !important;
         text-transform: uppercase !important;
         margin: 0 !important;
@@ -206,8 +237,9 @@ def get_custom_css() -> str:
 
     .section-subtitle {
         font-size: 14px;
-        color: #5A4E46;
+        color: #4A3E36;
         margin-bottom: 14px;
+        line-height: 1.4;
     }
 
     .highlight-pill {
@@ -221,12 +253,12 @@ def get_custom_css() -> str:
         text-transform: uppercase;
     }
 
-    /* Tip Card inside section */
+    /* Tip Card Inside Plan */
     .tip-card {
-        background-color: #FAF7F2;
-        border: 1px solid #EAE3D9;
-        border-radius: 12px;
-        padding: 14px 16px;
+        background-color: #FBF9F5;
+        border: 1px solid #EAE5DC;
+        border-radius: 14px;
+        padding: 16px 18px;
         margin-bottom: 10px;
     }
 
@@ -239,44 +271,44 @@ def get_custom_css() -> str:
     }
 
     .tip-tag {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        color: #4A3E36;
+        color: #5E7A66;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
     }
 
     .impact-badge-high {
         background-color: #B85334;
         color: #FFFFFF;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         padding: 3px 8px;
         border-radius: 6px;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
     }
 
     .impact-badge-medium {
         background-color: #B8860B;
         color: #231F20;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         padding: 3px 8px;
         border-radius: 6px;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
     }
 
     .impact-badge-low {
         background-color: #3D5A40;
         color: #FFFFFF;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         padding: 3px 8px;
         border-radius: 6px;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
     }
 
     .tip-text {
@@ -284,14 +316,14 @@ def get_custom_css() -> str:
         font-weight: 600 !important;
         line-height: 1.45 !important;
         color: #231F20 !important;
-        margin-bottom: 6px !important;
+        margin-bottom: 5px !important;
     }
 
     .tip-detail {
-        font-size: 15px !important;
+        font-size: 14px !important;
         color: #4A3E36 !important;
-        line-height: 1.4 !important;
-        margin-bottom: 6px !important;
+        line-height: 1.45 !important;
+        margin-bottom: 4px !important;
     }
 
     /* 3. Buttons: Minimum 44px tap target, solid, rounded, clear contrast normal & hover */
@@ -316,21 +348,23 @@ def get_custom_css() -> str:
     .stButton > button[kind="secondary"] {
         background-color: #FFFFFF !important;
         color: #231F20 !important;
-        border: 1.5px solid #D5CBBF !important;
+        border: 1.5px solid #E2DCD2 !important;
+        box-shadow: 0 2px 6px rgba(35, 31, 32, 0.02) !important;
     }
 
     .stButton > button[kind="secondary"]:hover {
-        background-color: #F2EDE4 !important;
+        background-color: #F7F4EE !important;
         color: #231F20 !important;
-        border-color: #3D5A40 !important;
+        border-color: #5E7A66 !important;
     }
 
-    /* Selected Option / Primary Button (Filled earthy color + checkmark) */
+    /* Selected Option / Primary Button (Deep Forest Green + Checkmark) */
     .stButton > button[kind="primary"] {
         background-color: #3D5A40 !important;
         color: #FFFFFF !important;
         border: 2px solid #3D5A40 !important;
         font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(61, 90, 64, 0.18) !important;
     }
 
     .stButton > button[kind="primary"]:hover {
@@ -347,6 +381,7 @@ def get_custom_css() -> str:
         font-size: 14px !important;
         font-weight: 700 !important;
         min-height: 44px !important;
+        box-shadow: none !important;
     }
 
     .dismiss-btn-container .stButton > button:hover {
@@ -355,23 +390,39 @@ def get_custom_css() -> str:
         border-color: #B85334 !important;
     }
 
+    /* Section divider */
+    .plan-section-divider {
+        margin: 24px 0 16px 0;
+        text-align: left;
+    }
+
+    .plan-heading-title {
+        font-size: 20px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.8px !important;
+        color: #231F20 !important;
+        text-transform: uppercase !important;
+        margin: 0 !important;
+    }
+
     /* Footer styling */
     .ventura-footer {
         margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid #EAE3D9;
+        padding-top: 18px;
+        border-top: 1px solid #EAE5DC;
         text-align: center;
         font-size: 13px;
-        color: #5A4E46;
+        color: #5E7A66;
+        font-weight: 500;
     }
 
     .disclaimer-text {
         font-size: 13px;
-        color: #5A4E46;
+        color: #5E7A66;
         font-style: italic;
-        margin-top: 14px;
+        margin-top: 16px;
         text-align: center;
-        line-height: 1.4;
+        line-height: 1.45;
     }
     </style>
     """
