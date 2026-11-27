@@ -109,12 +109,28 @@ def test_post_plan_with_dismissal():
     assert first_item_id not in returned_sa_ids
 
 
+def test_post_plan_with_new_questionnaire():
+    """Verify plan endpoint accepts the 3 new questions and responds with recommendations."""
+    payload = {
+        "focus": "Staying safer when I'm outdoors",
+        "household": "Just me",
+        "routine": "Spending lots of time outdoors",
+    }
+    response = client.post("/api/plan", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "areas" in data
+    # Mask tip should be present in sustainable alternatives for outdoors focus
+    sa_tips = [t["tip"] for t in data["areas"]["sustainable_alternatives"]]
+    assert any("mask" in t.lower() for t in sa_tips)
+
+
 def test_post_plan_validation_error():
-    """Verify that missing required assessment fields trigger a 422 Unprocessable Entity."""
-    # Missing 'cooking' and 'outdoor_time'
+    """Verify that missing required household demographic triggers a 422 Unprocessable Entity."""
+    # Missing required 'household'
     invalid_payload = {
-        "household": "Family with children",
-        "travel": "Car or two-wheeler",
+        "focus": "Protecting my family",
+        "routine": "Mostly indoors",
     }
     response = client.post("/api/plan", json=invalid_payload)
     assert response.status_code == 422
@@ -129,3 +145,52 @@ def test_cors_headers_for_react_dev_server():
     )
     assert response.status_code == 200
     assert response.headers.get("access-control-allow-origin") == origin
+
+
+def test_ask_ventura_offline_fallback():
+    """Verify /api/ask-ventura returns valid SSE reply and cards without an API key."""
+    import json
+
+    payload = {
+        "message": "How can I commute with less exposure today?",
+        "history": [],
+        "airQuality": {"aqi": 180, "mainPollutant": "PM2.5", "zoneName": "Delhi"},
+        "profile": {"household": "Just me"},
+        "fast": False,
+    }
+    response = client.post("/api/ask-ventura", json=payload)
+    assert response.status_code == 200
+    assert "text/event-stream" in response.headers.get("content-type", "")
+
+    data_line = next(
+        (line for line in response.text.splitlines() if line.startswith("data: ")),
+        "",
+    )
+    assert data_line
+    parsed = json.loads(data_line[6:])
+    assert parsed["type"] == "done"
+    assert isinstance(parsed["reply"], str) and len(parsed["reply"]) > 0
+    assert isinstance(parsed["cards"], list) and len(parsed["cards"]) >= 1
+    assert {"title", "explanation", "benefit", "impact", "category"} <= set(parsed["cards"][0].keys())
+
+
+def test_ask_ventura_groq_error_falls_back_cleanly(monkeypatch):
+    """Verify /api/ask-ventura never crashes when Groq API fails."""
+    import json
+    from unittest.mock import patch
+
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test_dummy_key")
+    with patch("requests.post", side_effect=RuntimeError("network error")):
+        response = client.post(
+            "/api/ask-ventura",
+            json={"message": "What mask seals best for winter smog?"},
+        )
+    assert response.status_code == 200
+    data_line = next(
+        (line for line in response.text.splitlines() if line.startswith("data: ")),
+        "",
+    )
+    parsed = json.loads(data_line[6:])
+    assert parsed["type"] == "done"
+    assert len(parsed["reply"]) > 0
+    assert len(parsed["cards"]) >= 1

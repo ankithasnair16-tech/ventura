@@ -49,3 +49,62 @@ export async function getAirQuality() {
     throw new Error('Unable to connect to air quality sensors. Please ensure the backend is running.');
   }
 }
+
+/**
+ * Fetch personalized recommendations from POST /api/plan.
+ * Payload matches PlanRequest in api/main.py:
+ * {
+ *   focus: string,
+ *   household: string,
+ *   routine: string,
+ *   dismissed_ids: string[],
+ *   dominant_pollutant?: string
+ * }
+ */
+export async function getPersonalPlan({
+  focus,
+  household,
+  routine,
+  dismissed_ids = [],
+  dominant_pollutant,
+}) {
+  const url = `${API_BASE_URL}/api/plan`;
+  const body = {
+    focus,
+    household,
+    routine,
+    dismissed_ids,
+  };
+  if (dominant_pollutant) {
+    body.dominant_pollutant = dominant_pollutant;
+  }
+
+  const makeRequest = async (fetchUrl) => {
+    const res = await fetch(fetchUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      throw new Error(`Plan service returned status ${res.status}`);
+    }
+    return await res.json();
+  };
+
+  try {
+    return await makeRequest(url);
+  } catch (error) {
+    if (API_BASE_URL === '' && !window.location.port.includes('8000')) {
+      try {
+        return await makeRequest('http://localhost:8000/api/plan');
+      } catch {
+        // Fall through
+      }
+    }
+    console.error('Failed to generate personal plan:', error);
+    throw new Error('Could not generate recommendations. Please ensure the backend is running.');
+  }
+}

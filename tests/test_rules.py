@@ -109,3 +109,50 @@ def test_not_for_me_dismiss_functionality():
 
     updated_sa_ids = [item.id for item in updated_plan["sustainable_alternatives"]]
     assert dismissed_id not in updated_sa_ids
+
+
+def test_new_questionnaire_answers_influence_plan():
+    """Verify that all 3 new answers (focus, household, routine) genuinely influence recommendations."""
+    # Scenario A: Home focus, sensitive household, mostly indoors
+    plan_home = get_personalized_plan(
+        dominant_pollutant="PM2.5",
+        answers={
+            "focus": "Keeping the air at home cleaner",
+            "household": "Someone with breathing sensitivities",
+            "routine": "Mostly indoors",
+        },
+    )
+    home_sa_tips = [t.tip for t in plan_home["sustainable_alternatives"]]
+    home_dr_tips = [t.tip for t in plan_home["daily_routines"]]
+    # Top sustainable alternative should prioritize home air cleaner
+    assert any("air cleaner" in t.lower() or "filter" in t.lower() for t in home_sa_tips)
+    # Routine should prioritize cleaning / sensitive care over outdoor timing
+    assert any("mop" in t.lower() or "wipe" in t.lower() or "chilly" in t.lower() for t in home_dr_tips)
+
+    # Scenario B: Outdoor focus, just me, spending lots of time outdoors
+    plan_outdoor = get_personalized_plan(
+        dominant_pollutant="PM2.5",
+        answers={
+            "focus": "Staying safer when I'm outdoors",
+            "household": "Just me",
+            "routine": "Spending lots of time outdoors",
+        },
+    )
+    outdoor_sa_tips = [t.tip for t in plan_outdoor["sustainable_alternatives"]]
+    outdoor_dr_tips = [t.tip for t in plan_outdoor["daily_routines"]]
+    # Top sustainable alternative should prioritize snug mask
+    assert any("mask" in t.lower() for t in outdoor_sa_tips)
+    # Top routine should prioritize afternoon timing
+    assert any("afternoon" in t.lower() or "outside" in t.lower() for t in outdoor_dr_tips)
+
+    # Compare rank scores: mask should score higher in outdoor scenario than home scenario
+    from rules.advice_rules import match_rule_score, ADVICE_RULES_TABLE
+    mask_rule = next(r for r in ADVICE_RULES_TABLE if r["id"] == "sa_pm25_mask")
+    score_outdoor = match_rule_score(mask_rule, "PM2.5", {"focus": "Staying safer when I'm outdoors", "routine": "Spending lots of time outdoors"})
+    score_home = match_rule_score(mask_rule, "PM2.5", {"focus": "Keeping the air at home cleaner", "routine": "Mostly indoors"})
+    assert score_outdoor > score_home
+
+    purifier_rule = next(r for r in ADVICE_RULES_TABLE if r["id"] == "sa_pm25_purifier")
+    score_purifier_home = match_rule_score(purifier_rule, "PM2.5", {"focus": "Keeping the air at home cleaner", "household": "Someone with breathing sensitivities"})
+    score_purifier_outdoor = match_rule_score(purifier_rule, "PM2.5", {"focus": "Staying safer when I'm outdoors", "household": "Just me"})
+    assert score_purifier_home > score_purifier_outdoor

@@ -45,7 +45,14 @@ Thumbs.db
 # Temporary & Generated Artifacts
 *.log
 *.tmp
-*.png
 scratch/
+# Root-level scratch screenshots only (app images in frontend/ are kept)
+/phone_layout.png
+/react_home_screen.png
 
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
 

@@ -48,7 +48,7 @@ export function AirStatusCard({ reading }) {
       <div className="pollutant-metrics-grid">
         <div className="pollutant-item">
           <div className="pollutant-label">Dominant Threat</div>
-          <div className="pollutant-value" style={{ color: '#B85334' }}>
+          <div className="pollutant-value" style={{ color: '#9C3E20' }}>
             {dominant_pollutant}
           </div>
         </div>

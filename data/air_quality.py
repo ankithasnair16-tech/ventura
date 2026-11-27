@@ -1,13 +1,15 @@
 """Air quality data retrieval, parsing, and caching for Ventura.
 
-Fetches real-time air quality data for Delhi from Open-Meteo API, caches
-the reading for 30 minutes, and falls back to last saved or sample data on error.
+Primary source: WAQI (World Air Quality Index) API — real monitoring station data.
+Fallback source: Open-Meteo Air Quality API — model-interpolated, keyless.
+Falls back further to last cached reading or built-in sample data on total failure.
 """
 
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 import logging
 import os
+from pathlib import Path
 import requests
 from typing import Optional, Dict, Any
 
@@ -16,7 +18,38 @@ logger = logging.getLogger(__name__)
 # Delhi Coordinates
 DELHI_LATITUDE: float = 28.61
 DELHI_LONGITUDE: float = 77.21
+
+# Open-Meteo (fallback / secondary source — no key required)
 OPEN_METEO_AQ_URL: str = "https://air-quality-api.open-meteo.com/v1/air-quality"
+
+# WAQI (primary source — requires free token from https://aqicn.org/data-platform/token/)
+WAQI_BASE_URL: str = "https://api.waqi.info/feed"
+
+
+def _load_waqi_token() -> str:
+    """Read WAQI_TOKEN from environment or project .env without extra dependencies."""
+    env_val = os.getenv("WAQI_TOKEN", "").strip()
+    if env_val:
+        return env_val
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        return ""
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    try:
+        if env_path.is_file():
+            for line in env_path.read_text(encoding="utf-8").splitlines():
+                stripped = line.strip()
+                if not stripped or stripped.startswith("#") or "=" not in stripped:
+                    continue
+                key, val = stripped.split("=", 1)
+                if key.strip() == "WAQI_TOKEN":
+                    return val.strip().strip('"').strip("'")
+    except Exception as exc:
+        logger.warning("Could not read .env for WAQI_TOKEN: %s", exc)
+    return ""
+
+
+WAQI_TOKEN: str = os.getenv("WAQI_TOKEN", "")
+
 DEFAULT_CACHE_TTL_SECONDS: int = 1800  # 30 minutes
 
 
@@ -80,6 +113,73 @@ def calculate_dominant_pollutant(pm2_5: float, no2: float) -> str:
     pm2_5_ratio = max(pm2_5, 0.0) / 35.0
     no2_ratio = max(no2, 0.0) / 80.0
     return "PM2.5" if pm2_5_ratio >= no2_ratio else "NO2"
+
+
+def parse_waqi_payload(payload: Dict[str, Any]) -> AirReading:
+    """Parse a WAQI API JSON response into an AirReading instance.
+
+    WAQI response structure:
+        {
+            "status": "ok",
+            "data": {
+                "aqi": 183,
+                "iaqi": {
+                    "pm25": {"v": 72.5},
+                    "no2":  {"v": 15.3}
+                },
+                "time": {"s": "2026-11-27 12:00:00"}
+            }
+        }
+    Raises ValueError for any missing or invalid field so the caller can
+    fall back cleanly to Open-Meteo without exposing the error to users.
+    """
+    if not isinstance(payload, dict):
+        raise ValueError("WAQI: payload is not a dict")
+
+    if payload.get("status") != "ok":
+        message = payload.get("data", "Unknown WAQI error")
+        raise ValueError(f"WAQI: non-ok status – {message}")
+
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        raise ValueError("WAQI: missing 'data' object")
+
+    aqi_raw = data.get("aqi")
+    if aqi_raw is None or not str(aqi_raw).lstrip("-").isdigit():
+        raise ValueError(f"WAQI: invalid or missing aqi field: {aqi_raw!r}")
+
+    aqi = int(aqi_raw)
+
+    iaqi = data.get("iaqi", {})
+    pm2_5 = float(iaqi.get("pm25", {}).get("v", 0.0))
+    no2 = float(iaqi.get("no2", {}).get("v", 0.0))
+
+    time_info = data.get("time", {})
+    time_str = time_info.get("s", "") if isinstance(time_info, dict) else ""
+    if time_str:
+        try:
+            dt = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")
+            formatted_time = dt.strftime("%b %d, %Y %I:%M %p")
+        except Exception:
+            formatted_time = time_str
+    else:
+        formatted_time = datetime.now().strftime("%b %d, %Y %I:%M %p")
+
+    category, status_color = get_aqi_category_and_color(aqi)
+    dominant = calculate_dominant_pollutant(pm2_5, no2)
+
+    return AirReading(
+        aqi=aqi,
+        pm2_5=pm2_5,
+        no2=no2,
+        dominant_pollutant=dominant,
+        category=category,
+        status_color=status_color,
+        timestamp=formatted_time,
+        source_label="Live data (WAQI)",
+        is_sample=False,
+        is_cached=False,
+    )
 
 
 def parse_air_quality_payload(payload: Dict[str, Any]) -> AirReading:
@@ -152,7 +252,15 @@ def parse_air_quality_payload(payload: Dict[str, Any]) -> AirReading:
 
 
 class AirQualityService:
-    """Manages fetching, caching (30 minutes), and fallbacks for Delhi air quality."""
+    """Manages fetching, caching (30 minutes), and fallbacks for air quality data.
+
+    Fetch priority:
+      1. 30-minute in-memory cache (default Delhi only).
+      2. WAQI live station data (primary – requires WAQI_TOKEN env var).
+      3. Open-Meteo model data (secondary fallback – keyless).
+      4. Last saved reading (tertiary fallback).
+      5. Built-in sample reading (final fallback – always available).
+    """
 
     def __init__(self, cache_ttl_seconds: Optional[int] = None):
         if cache_ttl_seconds is None:
@@ -169,12 +277,23 @@ class AirQualityService:
         self._last_saved_reading: Optional[AirReading] = None
         self._last_saved_at: Optional[datetime] = None
 
-    def get_air_quality(self, force_refresh: bool = False) -> AirReading:
-        """Retrieve current air quality, honoring cache, fallback, and sample modes."""
+    def get_air_quality(
+        self,
+        force_refresh: bool = False,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+    ) -> AirReading:
+        """Retrieve current air quality, honoring cache, fallback, and sample modes.
+        
+        If latitude and longitude are specified, fetches air quality for that coordinate.
+        """
         now = datetime.now(timezone.utc)
+        target_lat = latitude if latitude is not None else DELHI_LATITUDE
+        target_lon = longitude if longitude is not None else DELHI_LONGITUDE
+        is_custom_coords = (latitude is not None and longitude is not None)
 
-        # 1. Check cache validity
-        if not force_refresh and self._cached_reading is not None and self._cached_at is not None:
+        # 1. Check cache validity (only for default Delhi location to avoid cross-city cache hits)
+        if not is_custom_coords and not force_refresh and self._cached_reading is not None and self._cached_at is not None:
             elapsed = (now - self._cached_at).total_seconds()
             if elapsed < self.cache_ttl_seconds:
                 # Return cached reading marked as cached
@@ -191,14 +310,28 @@ class AirQualityService:
                     is_cached=True,
                 )
 
-        # 2. Fetch fresh live reading from Open-Meteo
+        # 2. Try WAQI first (primary – real monitoring station data)
         try:
-            reading = self._fetch_live_data()
-            # Update cache and last saved reading
-            self._cached_reading = reading
-            self._cached_at = now
-            self._last_saved_reading = reading
-            self._last_saved_at = now
+            reading = self._fetch_waqi_data(latitude=target_lat, longitude=target_lon)
+            if not is_custom_coords:
+                self._cached_reading = reading
+                self._cached_at = now
+                self._last_saved_reading = reading
+                self._last_saved_at = now
+            return reading
+        except Exception as exc:
+            logger.warning("WAQI fetch failed, falling back to Open-Meteo: %s", exc)
+
+        # 3. Fetch fresh live reading from Open-Meteo (secondary fallback)
+        # 3. Fetch fresh live reading from Open-Meteo (secondary fallback)
+        try:
+            reading = self._fetch_live_data(latitude=target_lat, longitude=target_lon)
+            if not is_custom_coords:
+                # Update cache and last saved reading for default Delhi
+                self._cached_reading = reading
+                self._cached_at = now
+                self._last_saved_reading = reading
+                self._last_saved_at = now
             return reading
         except Exception as exc:
             logger.warning("Failed to fetch live air quality from Open-Meteo: %s", exc)
@@ -235,13 +368,37 @@ class AirQualityService:
         )
         return sample
 
-    def _fetch_live_data(self) -> AirReading:
-        """Call Open-Meteo Air Quality API with Delhi coordinates."""
+    def _fetch_waqi_data(
+        self,
+        latitude: float,
+        longitude: float,
+    ) -> AirReading:
+        """Call the WAQI geo endpoint for any lat/lon coordinate.
+
+        Raises an exception (ValueError, requests.RequestException, etc.) on any
+        failure so the caller can fall back to Open-Meteo transparently.
+        """
+        token = WAQI_TOKEN or _load_waqi_token()
+        if not token:
+            raise ValueError("WAQI_TOKEN is not configured – skipping to Open-Meteo")
+
+        url = f"{WAQI_BASE_URL}/geo:{latitude};{longitude}/?token={token}"
+        response = requests.get(url, timeout=7)
+        response.raise_for_status()
+        payload = response.json()
+        return parse_waqi_payload(payload)
+
+    def _fetch_live_data(
+        self,
+        latitude: float = DELHI_LATITUDE,
+        longitude: float = DELHI_LONGITUDE,
+    ) -> AirReading:
+        """Call Open-Meteo Air Quality API with given coordinates."""
         params = {
-            "latitude": DELHI_LATITUDE,
-            "longitude": DELHI_LONGITUDE,
+            "latitude": latitude,
+            "longitude": longitude,
             "current": "us_aqi,pm2_5,nitrogen_dioxide",
-            "timezone": "Asia/Kolkata",
+            "timezone": "auto",
         }
         response = requests.get(OPEN_METEO_AQ_URL, params=params, timeout=7)
         response.raise_for_status()

@@ -54,7 +54,9 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Traps indoor dust and smoke safely without creating irritating ozone.",
         "tag": "Clean Air Tech",
-        "trigger_household": ["Someone with asthma", "Older adults at home", "Family with children"],
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_household": ["Someone with breathing sensitivities", "Older adults", "Children", "My whole household"],
+        "trigger_routine": ["Mostly indoors", "A mix of everything"],
     },
     {
         "id": "sa_pm25_mask",
@@ -64,7 +66,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Blocks heavy smoke and soot from reaching your lungs on smoggy days.",
         "tag": "Personal Protection",
-        "trigger_outdoor": ["Some", "A lot"],
+        "trigger_focus": ["Staying safer when I'm outdoors", "Making healthier everyday choices"],
+        "trigger_routine": ["Spending lots of time outdoors", "Commuting around the city", "A mix of everything"],
     },
     {
         "id": "sa_pm25_plants",
@@ -74,7 +77,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Low",
         "detail": "Helps keep the room calm and settles floating dust naturally.",
         "tag": "Green Living",
-        "trigger_household": ["Just me", "Family with children"],
+        "trigger_focus": ["Keeping the air at home cleaner", "Making healthier everyday choices"],
+        "trigger_household": ["Just me", "Children", "My whole household"],
     },
 
     # NO2 Dominant: Electric Cooking, Public Transit, Clean Mobility
@@ -86,7 +90,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Keeps cooking fumes and burned gas entirely out of your living space.",
         "tag": "Clean Cooking",
-        "trigger_cooking": ["LPG or gas", "Wood or coal", "Not sure"],
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_household": ["Children", "Someone with breathing sensitivities", "Older adults", "My whole household"],
     },
     {
         "id": "sa_no2_metro",
@@ -96,7 +101,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Keeps you away from bumper-to-bumper vehicle exhaust on busy roads.",
         "tag": "Clean Transit",
-        "trigger_travel": ["Car or two-wheeler"],
+        "trigger_focus": ["Staying safer when I'm outdoors", "Making healthier everyday choices"],
+        "trigger_routine": ["Commuting around the city", "Spending lots of time outdoors"],
     },
     {
         "id": "sa_no2_carpool",
@@ -106,7 +112,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "Lowers the number of exhaust-producing cars idling on the roads.",
         "tag": "Shared Mobility",
-        "trigger_travel": ["Car or two-wheeler"],
+        "trigger_focus": ["Making healthier everyday choices", "Staying safer when I'm outdoors"],
+        "trigger_routine": ["Commuting around the city", "A mix of everything"],
     },
 
     # ANY Pollutant Alternatives
@@ -118,6 +125,7 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "Draws less power from city power plants and reduces overall smoke.",
         "tag": "Energy Efficiency",
+        "trigger_focus": ["Making healthier everyday choices", "Keeping the air at home cleaner"],
     },
 
     # -------------------------------------------------------------------------
@@ -132,7 +140,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Warmer afternoon air allows trapped ground smoke to lift and clear away.",
         "tag": "Timing",
-        "trigger_outdoor": ["Some", "A lot"],
+        "trigger_focus": ["Staying safer when I'm outdoors", "Making healthier everyday choices"],
+        "trigger_routine": ["Spending lots of time outdoors", "A mix of everything", "Commuting around the city"],
     },
     {
         "id": "dr_pm25_cleaning",
@@ -142,6 +151,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "Stops settled dust from floating back up into the air you breathe.",
         "tag": "Habits",
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_routine": ["Mostly indoors", "A mix of everything"],
     },
     {
         "id": "dr_pm25_kids",
@@ -151,7 +162,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Protects sensitive airways during the daily peak hours of thick smog.",
         "tag": "Sensitive Care",
-        "trigger_household": ["Someone with asthma", "Family with children", "Older adults at home"],
+        "trigger_focus": ["Protecting my family"],
+        "trigger_household": ["Someone with breathing sensitivities", "Children", "Older adults", "My whole household"],
     },
 
     # NO2 Dominant: Traffic rush hours, kitchen timing, cabin air
@@ -163,7 +175,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Vehicle fumes build up heavily when traffic crawls during rush times.",
         "tag": "Timing",
-        "trigger_travel": ["Walk or cycle", "Car or two-wheeler"],
+        "trigger_focus": ["Staying safer when I'm outdoors", "Making healthier everyday choices"],
+        "trigger_routine": ["Commuting around the city", "Spending lots of time outdoors"],
     },
     {
         "id": "dr_no2_recirculation",
@@ -173,7 +186,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "Keeps outside exhaust fumes from being pulled directly into your cabin.",
         "tag": "Commuting",
-        "trigger_travel": ["Car or two-wheeler"],
+        "trigger_focus": ["Staying safer when I'm outdoors"],
+        "trigger_routine": ["Commuting around the city"],
     },
     {
         "id": "dr_no2_wfh",
@@ -183,7 +197,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "Keeps you out of heavy roadway smog jams during the worst travel times.",
         "tag": "Work Schedule",
-        "trigger_travel": ["Mostly work from home", "Car or two-wheeler"],
+        "trigger_focus": ["Protecting my family", "Making healthier everyday choices"],
+        "trigger_routine": ["Mostly indoors", "Commuting around the city"],
     },
 
     # -------------------------------------------------------------------------
@@ -198,6 +213,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Keeps night smog from creeping inside your bedrooms through tiny cracks.",
         "tag": "Sealing",
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_routine": ["Mostly indoors", "A mix of everything"],
     },
     {
         "id": "ih_pm25_no_incense",
@@ -207,6 +224,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Burning items inside creates heavy indoor smoke just like the outdoor air.",
         "tag": "Source Control",
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_household": ["Someone with breathing sensitivities", "Children", "Older adults", "My whole household"],
     },
     {
         "id": "ih_pm25_air_cleaner",
@@ -216,7 +235,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Gives your lungs clean, calm air to rest and recharge through the night.",
         "tag": "Filtration",
-        "trigger_household": ["Someone with asthma", "Older adults at home", "Family with children"],
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_household": ["Someone with breathing sensitivities", "Older adults", "Children", "My whole household"],
     },
 
     # NO2 Dominant: Kitchen ventilation, flame checks, burner time
@@ -228,7 +248,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "Pulls cooking smoke and burner fumes straight outside before they spread.",
         "tag": "Ventilation",
-        "trigger_cooking": ["LPG or gas", "Wood or coal", "Not sure"],
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_routine": ["Mostly indoors", "A mix of everything"],
     },
     {
         "id": "ih_no2_blue_flame",
@@ -238,7 +259,7 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "A steady blue flame burns cleanly and produces far fewer irritating fumes.",
         "tag": "Appliance Care",
-        "trigger_cooking": ["LPG or gas"],
+        "trigger_focus": ["Keeping the air at home cleaner", "Making healthier everyday choices"],
     },
     {
         "id": "ih_no2_lids",
@@ -248,6 +269,7 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "Using less gas time means fewer burning fumes released into your home.",
         "tag": "Kitchen Habit",
+        "trigger_focus": ["Keeping the air at home cleaner", "Making healthier everyday choices"],
     },
 
     # -------------------------------------------------------------------------
@@ -261,6 +283,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "General guidance: High impact on personal breathing comfort in smog.",
         "tag": "Personal Protection",
+        "trigger_focus": ["Staying safer when I'm outdoors", "Making healthier everyday choices"],
+        "trigger_routine": ["Spending lots of time outdoors", "Commuting around the city"],
     },
     {
         "id": "ia_purifier_impact",
@@ -270,6 +294,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "General guidance: High impact on restful sleep and easier nighttime breathing.",
         "tag": "Home Protection",
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
+        "trigger_household": ["Someone with breathing sensitivities", "Older adults", "Children", "My whole household"],
     },
     {
         "id": "ia_cooking_impact",
@@ -279,6 +305,7 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "General guidance: High impact on keeping indoor room air fresh.",
         "tag": "Kitchen Safety",
+        "trigger_focus": ["Keeping the air at home cleaner", "Protecting my family"],
     },
     {
         "id": "ia_transit_impact",
@@ -288,6 +315,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "High",
         "detail": "General guidance: High impact on reducing road smog and personal smoke exposure.",
         "tag": "City Impact",
+        "trigger_focus": ["Staying safer when I'm outdoors", "Making healthier everyday choices"],
+        "trigger_routine": ["Commuting around the city", "Spending lots of time outdoors"],
     },
     {
         "id": "ia_habits_impact",
@@ -297,6 +326,8 @@ ADVICE_RULES_TABLE: List[Dict[str, Any]] = [
         "impact_level": "Medium",
         "detail": "General guidance: Medium impact by timing your day with cleaner afternoon air.",
         "tag": "Daily Habits",
+        "trigger_focus": ["Making healthier everyday choices", "Staying safer when I'm outdoors"],
+        "trigger_routine": ["A mix of everything", "Spending lots of time outdoors"],
     },
 ]
 
@@ -313,25 +344,47 @@ def match_rule_score(rule: Dict[str, Any], dominant_pollutant: str, answers: Dic
     else:
         score -= 2
 
-    # Household match
-    household_triggers = rule.get("trigger_household", [])
-    if household_triggers and answers.get("household") in household_triggers:
-        score += 6
+    # Focus priority match (Question 1)
+    # Answers: "Protecting my family", "Staying safer when I'm outdoors", "Keeping the air at home cleaner", "Making healthier everyday choices"
+    focus_val = answers.get("focus") or answers.get("priority")
+    focus_triggers = rule.get("trigger_focus", [])
+    if focus_triggers and focus_val in focus_triggers:
+        score += 7
 
-    # Travel match
-    travel_triggers = rule.get("trigger_travel", [])
-    if travel_triggers and answers.get("travel") in travel_triggers:
-        score += 6
+    # Household demographic match (Question 2)
+    # Answers: "Just me", "Children", "Older adults", "Someone with breathing sensitivities", "My whole household"
+    # Backwards-compatible mappings supported:
+    # "Family with children" -> "Children", "Older adults at home" -> "Older adults", "Someone with asthma" -> "Someone with breathing sensitivities"
+    household_val = answers.get("household")
+    if household_val:
+        normalized_household = {
+            "Family with children": "Children",
+            "Older adults at home": "Older adults",
+            "Someone with asthma": "Someone with breathing sensitivities",
+        }.get(household_val, household_val)
+        household_triggers = rule.get("trigger_household", [])
+        if household_triggers and (normalized_household in household_triggers or household_val in household_triggers):
+            score += 7
 
-    # Cooking match
-    cooking_triggers = rule.get("trigger_cooking", [])
-    if cooking_triggers and answers.get("cooking") in cooking_triggers:
-        score += 6
+    # Daily routine match (Question 3)
+    # Answers: "Mostly indoors", "Commuting around the city", "Spending lots of time outdoors", "A mix of everything"
+    # Backwards-compatible mappings supported from old travel/outdoor:
+    # "Car or two-wheeler" -> "Commuting around the city", "Walk or cycle" -> "Spending lots of time outdoors", "Mostly work from home" -> "Mostly indoors"
+    routine_val = answers.get("routine") or answers.get("daily_routine")
+    if not routine_val:
+        travel_val = answers.get("travel")
+        if travel_val in ["Car or two-wheeler", "Public transport"]:
+            routine_val = "Commuting around the city"
+        elif travel_val == "Walk or cycle":
+            routine_val = "Spending lots of time outdoors"
+        elif travel_val == "Mostly work from home":
+            routine_val = "Mostly indoors"
+        elif answers.get("outdoor_time") == "A lot":
+            routine_val = "Spending lots of time outdoors"
 
-    # Outdoor time match
-    outdoor_triggers = rule.get("trigger_outdoor", [])
-    if outdoor_triggers and answers.get("outdoor_time") in outdoor_triggers:
-        score += 6
+    routine_triggers = rule.get("trigger_routine", [])
+    if routine_triggers and routine_val in routine_triggers:
+        score += 7
 
     return score
 
