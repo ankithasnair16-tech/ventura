@@ -33,6 +33,14 @@ Ventura is a clean-air web app for anyone living with air pollution — not just
 
 > The app works without API keys — WAQI falls back to Open-Meteo, and Ask Ventura falls back to curated offline cards.
 
+## Deployment to Vercel
+1. Import the repository into Vercel.
+2. Under **Project Settings > Git**, set the **Production Branch** to `feature/ventura-app`.
+3. Under **Environment Variables**, add:
+   - `WAQI_TOKEN` (your WAQI API token)
+   - `GROQ_API_KEY` (your Groq API key)
+4. Deploy! Vercel uses `vercel.json` to build the Vite frontend and route `/api/*` to the Python serverless function.
+
 ## Running tests
 Run the automated Python test suite from the project root:
 ```bash

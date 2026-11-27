@@ -27,7 +27,7 @@ Ventura is a full-stack web application consisting of a **FastAPI** Python backe
    - `App.tsx` — root component, manages `showSplash` state, renders splash then main app.
    - `HomeScreen.tsx`, `OnboardingFlow.tsx`, `MyPlanScreen.tsx`, `ExploreScreen.tsx`, `AskVenturaScreen.tsx`, `BottomNav.tsx`, `ImpactBadge.tsx`, `DetailSheet.tsx`, `VenturaLogo.tsx`.
    - `VenturaLogo.tsx` — leaf icon + "Ventura" wordmark; `showTagline` prop displays *"Cleaner air starts with you"* (city-agnostic tagline replacing the former Delhi-specific one).
-   - Vite dev server proxies `/api/*` requests to the FastAPI backend (`http://127.0.0.1:8001`).
+   - Vite dev server proxies `/api/*` requests to the FastAPI backend locally (`http://127.0.0.1:8001`); on Vercel, `vercel.json` rewrites route `/api/*` directly to the Python Serverless Function (`api/index.py`).
 7. **Zone coordinates (`frontend/src/data/venturaContent.ts`):** all 9 Delhi dropdown zones now carry precise `lat`/`lon` (e.g. Anand Vihar `28.6469, 77.3153`; Hauz Khas `28.5494, 77.2001`) so each hits its own WAQI monitoring station for a genuinely distinct AQI reading. Searched cities receive coordinates directly from the geocoding API.
 
 ## 4. Data Handling & Persistence
