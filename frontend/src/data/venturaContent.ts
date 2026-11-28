@@ -19,11 +19,16 @@ export const DELHI_ZONES_LIST: ZoneOption[] = [
   { id: 'noida',            name: 'Sector 62, Noida',             lat: 28.6273, lon: 77.3722 },
 ];
 
+import homeMorningImg from '../assets/images/aqi_delhi_morning_1795674037405.jpg';
+import sustainableAltImg from '../assets/images/explore_sustainable_alt_1795674038788.jpg';
+import dailyRoutinesImg from '../assets/images/explore_daily_routines_1795674038040.jpg';
+import indoorAirImg from '../assets/images/explore_indoor_air_1795674039125.jpg';
+
 export const GENERATED_IMAGES = {
-  homeMorning: '/src/assets/images/aqi_delhi_morning_1795674037405.jpg',
-  sustainableAlt: '/src/assets/images/explore_sustainable_alt_1795674038788.jpg',
-  dailyRoutines: '/src/assets/images/explore_daily_routines_1795674038040.jpg',
-  indoorAir: '/src/assets/images/explore_indoor_air_1795674039125.jpg',
+  homeMorning: homeMorningImg,
+  sustainableAlt: sustainableAltImg,
+  dailyRoutines: dailyRoutinesImg,
+  indoorAir: indoorAirImg,
 };
 
 export interface OnboardingQuestion {
