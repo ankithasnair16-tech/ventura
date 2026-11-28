@@ -2,8 +2,8 @@ tests/
 ui/
 app.py
 .pytest_cache/
-*.png
-*.jpg
+phone_layout.png
+react_home_screen.png
 .vscode/
 scratch/
 01-master-prd.md
